@@ -21,7 +21,7 @@
 ;
 ; Split build (the default of build_installer.ps1): a GitHub release asset may
 ; not exceed 2 GiB, so the CUDA libraries (_internal\torch\lib and Ollama's
-; lib\ollama\cuda_*) go into Nuuus-<ver>-libs-<n>.7z archives next to the
+; lib\ollama\cuda_*) go into Nuuus-<ver>-libs-<n>.zip archives next to the
 ; setup. build_installer.ps1 passes /DLibsExcludes (those folders) and
 ; /DLibsInclude (a generated file with one pair of [Files] entries per
 ; archive): an archive lying next to the setup is extracted from there
@@ -78,8 +78,9 @@ LZMANumBlockThreads=4
 OutputDir={#OutputDir}
 OutputBaseFilename=Nuuus-Setup-{#AppVer}
 #ifdef LibsInclude
-; is7zxr.dll: plain .7z with less memory for the 1 GB DLLs inside.
-ArchiveExtraction=enhanced/nopassword
+; is7z.dll reads the .zip archives. Not .7z: bsdtar writes a solid .7z, which
+; Inno extracts file by file from the start (2 GB took 23 min, .zip takes 3).
+ArchiveExtraction=full
 #endif
 
 [Languages]

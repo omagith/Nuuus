@@ -7,8 +7,8 @@
        which leaves app_built\ at the repo root with Нууус.exe, _internal\
        and the bundled Ollama in ollama\.
     2. Packs the CUDA libraries (_internal\torch\lib and Ollama's
-       lib\ollama\cuda_*) into build\installer\Nuuus-<ver>-libs-<n>.7z
-       (parallel LZMA2, each archive well under GitHub's 2 GiB asset limit).
+       lib\ollama\cuda_*) into build\installer\Nuuus-<ver>-libs-<n>.zip
+       (zip with LZMA, in parallel; each archive well under GitHub's 2 GiB asset limit).
     3. Compiles packaging\installer.iss with ISCC.exe. The setup holds the
        rest of the app and, while installing, takes each libs archive from
        its own folder if it lies there, otherwise downloads it from
@@ -139,7 +139,7 @@ $Parts = @()
 if (-not $Monolithic) {
     $Tar = Join-Path $env:SystemRoot "System32\tar.exe"
     if (-not (Test-Path -LiteralPath $Tar)) {
-        throw "$Tar not found (bsdtar ships with Windows 10 1803+); it writes the .7z archives."
+        throw "$Tar not found (bsdtar ships with Windows 10 1803+); it writes the .zip archives."
     }
     $dirs = @()
     foreach ($pattern in $LibsDirs) {
@@ -169,15 +169,15 @@ if (-not $Monolithic) {
         [void]$bin.Files.Add($f.FullName.Substring($BuiltDir.Length + 1).Replace("\", "/"))
     }
 
-    Get-ChildItem -LiteralPath $OutputDir -Filter "Nuuus-$AppVer-libs-*.7z" | Remove-Item -Force
-    Write-Host "Packing $($files.Count) files into $($bins.Count) libs archives (LZMA2, in parallel)..."
+    Get-ChildItem -LiteralPath $OutputDir -Filter "Nuuus-$AppVer-libs-*.zip" | Remove-Item -Force
+    Write-Host "Packing $($files.Count) files into $($bins.Count) libs archives (zip + LZMA, in parallel)..."
     $procs = @()
     for ($i = 0; $i -lt $bins.Count; $i++) {
-        $name = "Nuuus-$AppVer-libs-$($i + 1).7z"
+        $name = "Nuuus-$AppVer-libs-$($i + 1).zip"
         $list = Join-Path $OutputDir "$name.txt"
         [System.IO.File]::WriteAllLines($list, [string[]]$bins[$i].Files)
         $archive = Join-Path $OutputDir $name
-        $tarArgs = "--format 7zip --options 7zip:compression=lzma2,7zip:compression-level=9 " +
+        $tarArgs = "--format zip --options zip:compression=lzma,zip:compression-level=9 " +
             "-cf `"$archive`" -C `"$BuiltDir`" -T `"$list`""
         $p = Start-Process -FilePath $Tar -ArgumentList $tarArgs -NoNewWindow -PassThru
         $null = $p.Handle  # keeps ExitCode readable after the process ends

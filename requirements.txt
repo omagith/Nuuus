@@ -1,0 +1,50 @@
+# -*- coding: utf-8 -*-
+# «Нууус» — зависимости Python (Windows, Python 3.11).
+#
+# Порядок установки (подробно — в README.md):
+#   1. CUDA-сборка PyTorch ОТДЕЛЬНО и ДО этого файла, иначе pip поставит CPU-сборку:
+#        pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu126
+#   2. pip install -r requirements.txt
+#   3. GigaAM из исходников:  git clone https://github.com/salute-developers/GigaAM.git
+#                             pip install -e .\GigaAM[torch]
+#      (экстра [longform] НЕ ставить: она закрепляет torch==2.10 и не нужна приложению)
+#
+# Проверенный стек: Python 3.11, torch 2.14.0+cu126, torchaudio 2.11.0+cu126,
+# numpy 2.4.6, scipy 1.17, PyQt6 6.11, pyannote.audio 4.0.7, GigaAM 0.2.0,
+# python-docx 1.2, Jinja2 3.1, nara_wpe 0.0.11, WeasyPrint 70, DeepFilterNet 0.5.6.
+
+# --- общее ---
+PyQt6>=6.6
+sounddevice>=0.4.6
+soundfile>=0.12
+numpy>=1.26
+scipy>=1.11
+requests>=2.31
+torch>=2.2           # нужна CUDA-сборка под вашу видеокарту (см. шаг 1 выше); без неё всё работает на CPU, но медленно
+torchaudio>=2.2      # ставится вместе с torch из того же индекса
+
+# --- «Полная запись» ---
+pyannote.audio>=3.3  # диаризация; проверено на 4.0.7 (community-1 требует 4.x); нужен HF-токен с принятыми условиями моделей
+nara_wpe>=0.0.9      # подавление реверберации (WPE), включается галочкой
+python-docx>=1.1     # экспорт DOCX
+jinja2>=3.1          # HTML-шаблоны для PDF
+
+# Необязательно: PDF через WeasyPrint. На Windows дополнительно нужен GTK3 runtime;
+# без него (или без самого пакета) PDF собирается встроенным движком Qt.
+weasyprint>=62
+
+# --- необязательно: шумоподавление DeepFilterNet ---
+# Пакет deepfilternet 0.5.6 формально требует numpy<2 и packaging<24, хотя с
+# numpy 2.x работает (несовместимый импорт torchaudio.backend приложение
+# подменяет само). Поэтому он ставится отдельно и без зависимостей:
+#   pip install deepfilterlib==0.5.6 appdirs loguru sympy
+#   pip install --no-deps deepfilternet==0.5.6
+# Без него галочка «Шумоподавление» просто пропускается с предупреждением.
+
+# --- ставятся отдельно, не через этот файл ---
+# GigaAM      — из исходников, см. шаг 3 выше (тянет hydra-core, omegaconf, sentencepiece, onnxruntime)
+# Ollama      — отдельный установщик с ollama.com, не через pip
+# ffmpeg      — уже лежит в app\ffmpeg\bin (иначе берётся из PATH)
+# nvidia-smi  — ставится вместе с драйвером NVIDIA; по нему приложение решает, сколько слоёв LLM
+#               держать на видеокарте (без него — безопасные значения для карты 4 ГБ)
+# pytest, pyinstaller — requirements-dev.txt

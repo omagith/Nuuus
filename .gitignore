@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Personal data: settings (HF token), recordings, logs, downloaded models
+data/
+
+# Build output (PyInstaller folder, setup.exe, libs archives)
+app_built/
+build/
+dist/
+
+# Third-party binaries and sources fetched separately (README, "Для разработчиков")
+vendor/
+app/ffmpeg/
+GigaAM/
+
+# Local backups
+.backup/

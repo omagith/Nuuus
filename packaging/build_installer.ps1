@@ -143,7 +143,9 @@ if (-not $Monolithic) {
     }
     $dirs = @()
     foreach ($pattern in $LibsDirs) {
-        $dirs += @(Get-ChildItem -Path (Join-Path $BuiltDir $pattern) -Directory -ErrorAction SilentlyContinue)
+        # Get-Item, not Get-ChildItem: the folders themselves, not their subfolders.
+        $dirs += @(Get-Item -Path (Join-Path $BuiltDir $pattern) -ErrorAction SilentlyContinue |
+            Where-Object { $_.PSIsContainer })
     }
     if ($dirs.Count -eq 0) {
         throw "None of $($LibsDirs -join ', ') found in $BuiltDir."
